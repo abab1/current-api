@@ -139,7 +139,19 @@ router.get('/:userId/transactions-summary', async (req, res, next) => {
       merchantId: { $in: result.map((summary) => summary._id) },
     });
 
-    return res.status(200).send(result);
+    const merchantMap = {};
+    merchants.forEach((merchant) => (merchantMap[merchant.merchantId] = merchant.name));
+
+    const summary = [];
+    result.forEach((item, index) => {
+      const obj = {};
+      obj.merchantName = merchantMap[item._id];
+      obj.merchantId = item._id;
+      obj.moneySpent = `$${item.balance / 100}`;
+      summary.push(obj);
+    });
+
+    return res.status(200).send(summary);
   } catch (e) {
     return next(e);
   }

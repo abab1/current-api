@@ -1,6 +1,7 @@
 import express from 'express';
+import fetch from 'node-fetch';
 import models from '../../models';
-import create from '../../utils/createDocument';
+
 let router = express.Router();
 
 const { Merchant, Transaction } = models;
@@ -9,7 +10,30 @@ router.get('/:merchantId/transactions', async (req, res, next) => {
   try {
     const { merchantId } = req.params;
     const transactions = await Transaction.find(merchantId).exec();
-    return res.status(200).send(`Merchant transactions: ${JSON.stringify(transactions)}`);
+    return res.status(200).send(transactions);
+  } catch (e) {
+    return next(e);
+  }
+});
+
+router.patch('/:merchantId', async (req, res, next) => {
+  try {
+    const { merchantId } = req.params;
+    const merchant = await Merchant.findOne({ merchantId }).exec();
+    if (!merchant) {
+      return res.status(400).send('Merchant doesnt exist');
+    }
+    const { name, latitude, longitude } = merchant;
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?
+    location=${latitude},${longitude}&radius=1000&keyword=${
+      name.split(' ')[0]
+    }&key=AIzaSyBMqSF2_WoK8ow89v8Qq4SHLb94mY9B5j8`;
+    const data = await fetch(url);
+    const address = data && data.results && data.results[0] && data.results[0].vicinity;
+    merchant.address = address;
+
+    const updatedMerchant = await merchant.save();
+    return res.status(201).send(`updated address: ${address}`);
   } catch (e) {
     return next(e);
   }

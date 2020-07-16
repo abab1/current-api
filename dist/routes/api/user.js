@@ -20,7 +20,8 @@ var _createDocument = _interopRequireDefault(require("../../utils/createDocument
 var router = _express["default"].Router();
 
 var User = _models["default"].User,
-    Transaction = _models["default"].Transaction;
+    Transaction = _models["default"].Transaction,
+    Merchant = _models["default"].Merchant;
 var createUser = _createDocument["default"].createUser;
 
 var getBalance = /*#__PURE__*/function () {
@@ -226,7 +227,7 @@ router.patch('/:id', /*#__PURE__*/function () {
 
           case 23:
             updatedUser = _context4.sent;
-            return _context4.abrupt("return", res.status(201).send("User updated successfully: ".concat(updatedUser.toJSONString())));
+            return _context4.abrupt("return", res.status(201).send(updatedUser.toJSONString()));
 
           case 27:
             _context4.prev = 27;
@@ -278,52 +279,186 @@ router.get('/:userId/balance', /*#__PURE__*/function () {
     return _ref5.apply(this, arguments);
   };
 }());
-router.post('/authorize-transacion', /*#__PURE__*/function () {
+router.get('/:userId/transactions', /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res, next) {
-    var _req$body3, userId, transactionAmount, balance;
-
+    var userId, transactions;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
             _context6.prev = 0;
-            _req$body3 = req.body, userId = _req$body3.userId, transactionAmount = _req$body3.transactionAmount;
+            userId = req.params.userId;
             _context6.next = 4;
+            return Transaction.find(userId).exec();
+
+          case 4:
+            transactions = _context6.sent;
+            return _context6.abrupt("return", res.status(200).send(JSON.stringify(transactions)));
+
+          case 8:
+            _context6.prev = 8;
+            _context6.t0 = _context6["catch"](0);
+            return _context6.abrupt("return", next(_context6.t0));
+
+          case 11:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6, null, [[0, 8]]);
+  }));
+
+  return function (_x14, _x15, _x16) {
+    return _ref6.apply(this, arguments);
+  };
+}());
+router.get('/:userId/:merchantId/transactions', /*#__PURE__*/function () {
+  var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res, next) {
+    var _req$params, userId, merchantId, transactions;
+
+    return _regenerator["default"].wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            _context7.prev = 0;
+            _req$params = req.params, userId = _req$params.userId, merchantId = _req$params.merchantId;
+            _context7.next = 4;
+            return Transaction.find(userId, merchantId).exec();
+
+          case 4:
+            transactions = _context7.sent;
+            return _context7.abrupt("return", res.status(200).send(transactions));
+
+          case 8:
+            _context7.prev = 8;
+            _context7.t0 = _context7["catch"](0);
+            return _context7.abrupt("return", next(_context7.t0));
+
+          case 11:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7, null, [[0, 8]]);
+  }));
+
+  return function (_x17, _x18, _x19) {
+    return _ref7.apply(this, arguments);
+  };
+}());
+router.get('/:userId/transactions-summary', /*#__PURE__*/function () {
+  var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res, next) {
+    var userId, result, merchants, merchantMap, summary;
+    return _regenerator["default"].wrap(function _callee8$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            _context8.prev = 0;
+            userId = req.params.userId;
+            _context8.next = 4;
+            return Transaction.aggregate([{
+              $match: {
+                userId: userId
+              }
+            }, {
+              $group: {
+                _id: '$merchantId',
+                balance: {
+                  $sum: '$amountInCents'
+                }
+              }
+            }]);
+
+          case 4:
+            result = _context8.sent;
+            _context8.next = 7;
+            return Merchant.where({
+              merchantId: {
+                $in: result.map(function (summary) {
+                  return summary._id;
+                })
+              }
+            });
+
+          case 7:
+            merchants = _context8.sent;
+            merchantMap = {};
+            merchants.forEach(function (merchant) {
+              return merchantMap[merchant.merchantId] = merchant.name;
+            });
+            summary = [];
+            result.forEach(function (item, index) {
+              var obj = {};
+              obj.merchantName = merchantMap[item._id];
+              obj.merchantId = item._id;
+              obj.moneySpent = "$".concat(item.balance / 100);
+              summary.push(obj);
+            });
+            return _context8.abrupt("return", res.status(200).send(summary));
+
+          case 15:
+            _context8.prev = 15;
+            _context8.t0 = _context8["catch"](0);
+            return _context8.abrupt("return", next(_context8.t0));
+
+          case 18:
+          case "end":
+            return _context8.stop();
+        }
+      }
+    }, _callee8, null, [[0, 15]]);
+  }));
+
+  return function (_x20, _x21, _x22) {
+    return _ref8.apply(this, arguments);
+  };
+}());
+router.post('/authorize-transaction', /*#__PURE__*/function () {
+  var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res, next) {
+    var _req$body3, userId, transactionAmount, balance;
+
+    return _regenerator["default"].wrap(function _callee9$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            _context9.prev = 0;
+            _req$body3 = req.body, userId = _req$body3.userId, transactionAmount = _req$body3.transactionAmount;
+            _context9.next = 4;
             return getBalance(userId);
 
           case 4:
-            balance = _context6.sent;
+            balance = _context9.sent;
 
             if (!(balance > transactionAmount)) {
-              _context6.next = 7;
+              _context9.next = 7;
               break;
             }
 
-            return _context6.abrupt("return", res.status(200).send({
+            return _context9.abrupt("return", res.status(200).send({
               status: 'APPROVED'
             }));
 
           case 7:
-            return _context6.abrupt("return", res.status(200).send({
+            return _context9.abrupt("return", res.status(200).send({
               status: 'DECLINED',
               reason: 'Insufficient balance'
             }));
 
           case 10:
-            _context6.prev = 10;
-            _context6.t0 = _context6["catch"](0);
-            next(_context6.t0);
+            _context9.prev = 10;
+            _context9.t0 = _context9["catch"](0);
+            next(_context9.t0);
 
           case 13:
           case "end":
-            return _context6.stop();
+            return _context9.stop();
         }
       }
-    }, _callee6, null, [[0, 10]]);
+    }, _callee9, null, [[0, 10]]);
   }));
 
-  return function (_x14, _x15, _x16) {
-    return _ref6.apply(this, arguments);
+  return function (_x23, _x24, _x25) {
+    return _ref9.apply(this, arguments);
   };
 }());
 var _default = router;

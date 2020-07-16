@@ -1,10 +1,6 @@
 "use strict";
 
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-require("dotenv/config");
 
 var _express = _interopRequireDefault(require("express"));
 
@@ -12,7 +8,7 @@ var _bodyParser = _interopRequireDefault(require("body-parser"));
 
 var _routes = _interopRequireDefault(require("./routes"));
 
-var _models = _interopRequireWildcard(require("./models"));
+var _models = require("./models");
 
 //Express setup
 var app = (0, _express["default"])();
@@ -40,5 +36,5 @@ app.use(function (err, req, res, next) {
   });
 });
 app.listen(3000, function () {
-  console.log("app listening on port 3000! ".concat(process.env.MY_SECRET));
+  console.log("app listening on port 3000!");
 });

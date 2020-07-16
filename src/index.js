@@ -1,14 +1,15 @@
-import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
-import router from './routes/index';
-import models, { connectDb } from './models';
+import router from './routes';
+import { connectDb } from './models';
 
 //Express setup
 let app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/', router);
+
+connectDb();
 
 /// catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -29,8 +30,6 @@ app.use(function (err, req, res, next) {
   });
 });
 
-connectDb();
-
 app.listen(3000, function () {
-  console.log(`app listening on port 3000! ${process.env.MY_SECRET}`);
+  console.log(`app listening on port 3000!`);
 });

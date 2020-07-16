@@ -4,19 +4,19 @@ import { v4 as uuid } from 'uuid';
 const MerchantSchema = new mongoose.Schema({
   latitude: {
     type: Number,
-    required: [true, "can't be blank"],
+    required: [true, "latitude can't be blank"],
   },
   longitude: {
     type: Number,
-    required: [true, "can't be blank"],
+    required: [true, "longitude can't be blank"],
   },
   name: {
     type: String,
-    required: [true, "can't be blank"],
+    required: [true, "name can't be blank"],
   },
   merchantId: {
     type: String,
-    required: [true, "can't be blank"],
+    required: [true, "merchantId can't be blank"],
   },
   address: {
     type: String,
@@ -24,11 +24,11 @@ const MerchantSchema = new mongoose.Schema({
 });
 
 MerchantSchema.methods.setMerchantId = function () {
-  this.userId = uuid();
+  this.merchantId = uuid();
 };
 
-MerchantSchema.methods.setAddress = function () {
-  this.address = 'random address';
+MerchantSchema.methods.setAddress = function (address) {
+  this.address = address;
 };
 
 const Merchant = mongoose.model('Merchant', MerchantSchema);

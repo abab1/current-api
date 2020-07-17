@@ -5,7 +5,11 @@
   "main": "src/app.js",
   "jest": {
     "verbose": true,
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "testPathIgnorePatterns" : [
+      "<rootDir>/dist",
+      "<rootDir>/node_modules"
+    ]
   },
   "scripts": {
     "test": "jest --detectOpenHandles --forceExit",

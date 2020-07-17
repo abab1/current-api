@@ -1,5 +1,5 @@
 import models from '../models';
-import create from '../../utils/createDocument';
+import create from '../utils/createDocument';
 
 const { createUser } = create;
 const { Merchant, Transaction, User } = models;
@@ -23,14 +23,18 @@ const getBalance = async (userId) => {
 };
 
 const getByUserId = async (req, res, next) => {
-  let user = await User.findOne({ userId: req.params.id }).exec();
-  if (!user) {
-    return res.status(404).send('User not found');
+  try {
+    const user = await User.findOne({ userId: req.params.userId }).exec();
+    if (!user) {
+      return res.status(400).send('User not found');
+    }
+    return res.status(201).send(`user is ${user.toJSONString()}`);
+  } catch (e) {
+    next(e);
   }
-  return res.status(201).send(`user is ${user.toJSONString()}`);
 };
 
-const create = async (req, res, next) => {
+const createIfDoesntExist = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password } = req.body;
     let user = await User.findOne({ email }).exec();
@@ -55,7 +59,7 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password, newPassword } = req.body;
-    let user = await User.findOne({ userId: req.params.id }).exec();
+    let user = await User.findOne({ userId: req.params.userId }).exec();
 
     if (password === newPassword) {
       return res.status(400).send('New and old password can not be the same');
@@ -89,7 +93,7 @@ const update = async (req, res, next) => {
   }
 };
 
-const getBalance = async (req, res, next) => {
+const getUserBalance = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const balance = await getBalance(userId);
@@ -103,7 +107,7 @@ const getTransactions = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const transactions = await Transaction.find({ userId }).exec();
-    return res.status(200).send(JSON.stringify(transactions));
+    return res.status(200).send(transactions);
   } catch (e) {
     return next(e);
   }
@@ -173,9 +177,9 @@ const authorizeTransaction = async (req, res, next) => {
 
 export default {
   authorizeTransaction,
-  create,
+  createIfDoesntExist,
   getAllUserTransactionsByMerchant,
-  getBalance,
+  getUserBalance,
   getByUserId,
   getTransactions,
   getUserTransactionSummary,

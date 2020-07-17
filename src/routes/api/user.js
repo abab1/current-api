@@ -3,9 +3,9 @@ import userController from '../../controllers/user';
 
 let router = express.Router();
 
-router.get('/:id', userController.getByUserId);
+router.get('/:userId', userController.getByUserId);
 
-router.get('/:userId/balance', userController.getBalance);
+router.get('/:userId/balance', userController.getUserBalance);
 
 router.get('/:userId/transactions', userController.getTransactions);
 
@@ -13,9 +13,9 @@ router.get('/:userId/:merchantId/transactions', userController.getAllUserTransac
 
 router.get('/:userId/transactions-summary', userController.getUserTransactionSummary);
 
-router.post('/', userController.create);
+router.post('/', userController.createIfDoesntExist);
 
-router.patch('/:id', userController.update);
+router.patch('/:userId', userController.update);
 
 router.post('/authorize-transaction', userController.authorizeTransaction);
 

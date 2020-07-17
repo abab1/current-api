@@ -1,12 +1,12 @@
 import merchants from './merchants';
 
 const mockTransactionFind = jest.fn();
-const mockMerchnantFindOne = jest.fn();
+const mockMerchantFindOne = jest.fn();
 
 jest.mock('../models', () => ({
   __esModule: true,
   default: {
-    Merchant: { findOne: mockMerchnantFindOne },
+    Merchant: { findOne: mockMerchantFindOne },
     Transaction: {
       find: () => {
         return {

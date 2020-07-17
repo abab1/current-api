@@ -76,9 +76,19 @@ router.get('/:id', /*#__PURE__*/function () {
 
           case 2:
             user = _context2.sent;
-            res.status(201).send("user is ".concat(user.toJSONString()));
+            console.log('$$$$$', user, User);
 
-          case 4:
+            if (user) {
+              _context2.next = 6;
+              break;
+            }
+
+            return _context2.abrupt("return", res.status(404).send('User not found'));
+
+          case 6:
+            return _context2.abrupt("return", res.status(201).send("user is ".concat(user.toJSONString())));
+
+          case 7:
           case "end":
             return _context2.stop();
         }
@@ -289,7 +299,9 @@ router.get('/:userId/transactions', /*#__PURE__*/function () {
             _context6.prev = 0;
             userId = req.params.userId;
             _context6.next = 4;
-            return Transaction.find(userId).exec();
+            return Transaction.find({
+              userId: userId
+            }).exec();
 
           case 4:
             transactions = _context6.sent;
@@ -323,7 +335,10 @@ router.get('/:userId/:merchantId/transactions', /*#__PURE__*/function () {
             _context7.prev = 0;
             _req$params = req.params, userId = _req$params.userId, merchantId = _req$params.merchantId;
             _context7.next = 4;
-            return Transaction.find(userId, merchantId).exec();
+            return Transaction.find({
+              userId: userId,
+              merchantId: merchantId
+            }).exec();
 
           case 4:
             transactions = _context7.sent;

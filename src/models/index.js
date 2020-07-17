@@ -8,7 +8,7 @@ import Record from './Record';
 const connectDb = () => {
   return mongoose.connect('mongodb://localhost/conduit', {
     useNewUrlParser: true,
-    useUnifiedTopology: false,
+    useUnifiedTopology: true,
     useCreateIndex: true,
     keepAlive: 300000,
     connectTimeoutMS: 30000,

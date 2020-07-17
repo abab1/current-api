@@ -2,14 +2,18 @@
   "name": "curent-api",
   "version": "1.0.0",
   "description": "node backend api test",
-  "main": "src/index.js",
+  "main": "src/app.js",
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --detectOpenHandles --forceExit",
     "lint": "eslint .",
     "populateData": "npm run build && node --max-old-space-size=4096 dist/utils/populateDB.js",
     "build": "babel src -d dist",
-    "start": "npm run build && nodemon --exec babel-node src/index.js",
-    "serve": "npm run build && node dist/index.js",
+    "start": "npm run build && nodemon --exec babel-node src/server.js",
+    "serve": "npm run build && node dist/server.js",
     "query": "npm run build && node --max-old-space-size=4096 dist/utils/tryQuery.js"
   },
   "author": "abab1@umbc.edu",
@@ -27,8 +31,11 @@
     "csv-parser": "^2.3.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jest": "^26.1.0",
     "mongoose": "^5.9.23",
     "node-fetch": "^2.6.0",
+    "superagent": "^5.3.1",
+    "supertest": "^4.0.2",
     "uuid": "^8.2.0"
   },
   "devDependencies": {

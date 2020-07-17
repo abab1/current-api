@@ -20,7 +20,7 @@ var _Record = _interopRequireDefault(require("./Record"));
 var connectDb = function connectDb() {
   return _mongoose["default"].connect('mongodb://localhost/conduit', {
     useNewUrlParser: true,
-    useUnifiedTopology: false,
+    useUnifiedTopology: true,
     useCreateIndex: true,
     keepAlive: 300000,
     connectTimeoutMS: 30000

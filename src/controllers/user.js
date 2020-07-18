@@ -24,7 +24,7 @@ const getBalance = async (userId) => {
 
 const getByUserId = async (req, res, next) => {
   try {
-    const user = await User.findOne({ userId: req.params.userId }).exec();
+    const user = await User.findOne({ userId: req.params.userId });
     if (!user) {
       return res.status(400).send('User not found');
     }
@@ -37,8 +37,7 @@ const getByUserId = async (req, res, next) => {
 const createIfDoesntExist = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password } = req.body;
-    let user = await User.findOne({ email }).exec();
-
+    let user = await User.findOne({ email });
     if (!user) {
       const user = await createUser({
         firstName,
@@ -46,6 +45,7 @@ const createIfDoesntExist = async (req, res, next) => {
         password,
         email,
       });
+
       const createdUser = await user.save();
       return res.status(201).send(`User created successfully: ${createdUser.toJSONString()}`);
     } else {
@@ -59,7 +59,7 @@ const createIfDoesntExist = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password, newPassword } = req.body;
-    let user = await User.findOne({ userId: req.params.userId }).exec();
+    let user = await User.findOne({ userId: req.params.userId });
 
     if (password === newPassword) {
       return res.status(400).send('New and old password can not be the same');
@@ -106,7 +106,7 @@ const getUserBalance = async (req, res, next) => {
 const getTransactions = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const transactions = await Transaction.find({ userId }).exec();
+    const transactions = await Transaction.find({ userId });
     return res.status(200).send(transactions);
   } catch (e) {
     return next(e);
@@ -116,7 +116,7 @@ const getTransactions = async (req, res, next) => {
 const getAllUserTransactionsByMerchant = async (req, res, next) => {
   try {
     const { userId, merchantId } = req.params;
-    const transactions = await Transaction.find({ userId, merchantId }).exec();
+    const transactions = await Transaction.find({ userId, merchantId });
     return res.status(200).send(transactions);
   } catch (e) {
     return next(e);

@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
 app.use(function (err, req, res, next) {
   console.log(err.stack);
   res.status(err.status || 500);
-  return res.json({
+  return res.send({
     errors: {
       message: err.message,
       error: err

@@ -1,55 +1,36 @@
 import user from './user';
+import models from '../models';
 
-const mockTransactionFind = jest.fn();
-const mockMerchantFind = jest.fn();
-const mockUserFind = jest.fn();
-const mockTransactionFindOne = jest.fn();
-const mockUserFindOne = jest.fn();
-const mockMerchantFindOne = jest.fn();
-const mockMerchantWhere = jest.fn();
-const mockTransactionAggregate = jest.fn();
+const { User, Transaction } = models;
 
 jest.mock('../models', () => ({
   __esModule: true,
   default: {
     Merchant: {
-      find: () => {
-        return {
-          exec: mockMerchantFind,
-        };
-      },
-      findOne: () => {
-        return {
-          exec: mockMerchantFindOne,
-        };
-      },
-      where: mockMerchantWhere,
+      find: jest.fn(),
+      findOne: jest.fn(),
+      where: jest.fn(),
     },
     Transaction: {
-      find: () => {
-        return {
-          exec: mockTransactionFind,
-        };
-      },
-      findOne: () => {
-        return {
-          exec: mockTransactionFindOne,
-        };
-      },
-      aggregate: mockTransactionAggregate,
+      find: jest.fn(),
+      findOne: jest.fn(),
+      aggregate: jest.fn(),
     },
-    User: {
-      find: () => {
+    User: (() => {
+      function User() {
         return {
-          exec: mockUserFind,
+          setPassword: jest.fn(),
+          setUserId: jest.fn(),
+          save: jest.fn(() => Promise.resolve({ id: 1, toJSONString: jest.fn() })),
+          toJSONString: jest.fn(),
         };
-      },
-      findOne: () => {
-        return {
-          exec: mockUserFindOne,
-        };
-      },
-    },
+      }
+      User.find = jest.fn();
+      User.findOne = jest.fn();
+      User.prototype.save = jest.fn();
+
+      return User;
+    })(),
   },
 }));
 
@@ -69,15 +50,40 @@ const getReq = (params, body) => ({
 });
 
 describe('merchant controller tests', () => {
-  beforeEach(() => {
-    mockTransactionFind.mockReset();
-    mockMerchantFind.mockReset();
-    mockUserFind.mockReset();
-    mockTransactionFindOne.mockReset();
-    mockUserFindOne.mockReset();
-    mockMerchantFindOne.mockReset();
-    mockMerchantWhere.mockReset();
-    mockTransactionAggregate.mockReset();
+  beforeEach(() => {});
+
+  describe('createIfDoesntExist tests', () => {
+    it('should not create a userif already exists with the same email', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(422);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({ id: 12 });
+      await user.createIfDoesntExist(req, res, next);
+      expect(mockSend).toHaveBeenCalled();
+      done();
+    });
+
+    it('should create a user if already no user exists with the given email', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(201);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce(null);
+      await user.createIfDoesntExist(req, res, next);
+      expect(mockSend).toHaveBeenCalled();
+      done();
+    });
   });
 
   describe('getByUserId tests', () => {
@@ -91,7 +97,7 @@ describe('merchant controller tests', () => {
         },
       };
       const next = jest.fn();
-      mockUserFindOne.mockResolvedValueOnce(null);
+      User.findOne.mockResolvedValueOnce(null);
       await user.getByUserId(req, res, next);
       expect(mockSend).toBeCalledWith('User not found');
       done();
@@ -105,7 +111,7 @@ describe('merchant controller tests', () => {
       };
       const next = jest.fn();
       const error = new Error({ status: 500 });
-      mockUserFindOne.mockRejectedValueOnce(new Error({ status: 500 }));
+      User.findOne.mockRejectedValueOnce(new Error({ status: 500 }));
       await user.getByUserId(req, res, next);
       expect(next).toBeCalledWith(error);
       done();
@@ -121,7 +127,7 @@ describe('merchant controller tests', () => {
         },
       };
       const next = jest.fn();
-      mockUserFindOne.mockResolvedValueOnce({ id: 1, toJSONString: () => 'happy' });
+      User.findOne.mockResolvedValueOnce({ id: 1, toJSONString: () => 'happy' });
       await user.getByUserId(req, res, next);
       expect(mockSend).toBeCalledWith('user is happy');
       done();
@@ -140,7 +146,7 @@ describe('merchant controller tests', () => {
       };
       const next = jest.fn();
       const transactions = [{ id: 1 }, { id: 2 }];
-      mockTransactionFind.mockResolvedValueOnce(transactions);
+      Transaction.find.mockResolvedValueOnce(transactions);
       await user.getTransactions(req, res, next);
       expect(sendMock).toBeCalledWith(transactions);
       done();

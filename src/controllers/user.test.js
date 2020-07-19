@@ -21,8 +21,8 @@ jest.mock('../models', () => ({
         return {
           setPassword: jest.fn(),
           setUserId: jest.fn(),
-          save: jest.fn(() => Promise.resolve({ id: 1, toJSONString: jest.fn() })),
-          toJSONString: jest.fn(),
+          save: jest.fn(() => Promise.resolve({ id: 1, toJSONString: () => 'mock' })),
+          toJSONString: () => 'mock',
         };
       }
       User.find = jest.fn();
@@ -43,13 +43,13 @@ const getReq = (params, body) => ({
   body: {
     firstName: 'Abhishek',
     lastName: 'Singh',
-    password: 'fkhsfk2342',
+    password: 'fkhsfK2342',
     email: 'abhishek@gmail.com',
     ...body,
   },
 });
 
-describe('merchant controller tests', () => {
+describe('user controller tests', () => {
   beforeEach(() => {});
 
   describe('createIfDoesntExist tests', () => {
@@ -65,7 +65,7 @@ describe('merchant controller tests', () => {
       const next = jest.fn();
       User.findOne.mockResolvedValueOnce({ id: 12 });
       await user.createIfDoesntExist(req, res, next);
-      expect(mockSend).toHaveBeenCalled();
+      expect(mockSend).toHaveBeenCalledWith('User already exists for email: abhishek@gmail.com');
       done();
     });
 
@@ -81,7 +81,7 @@ describe('merchant controller tests', () => {
       const next = jest.fn();
       User.findOne.mockResolvedValueOnce(null);
       await user.createIfDoesntExist(req, res, next);
-      expect(mockSend).toHaveBeenCalled();
+      expect(mockSend).toHaveBeenCalledWith('User created successfully: mock');
       done();
     });
   });
@@ -149,6 +149,140 @@ describe('merchant controller tests', () => {
       Transaction.find.mockResolvedValueOnce(transactions);
       await user.getTransactions(req, res, next);
       expect(sendMock).toBeCalledWith(transactions);
+      done();
+    });
+  });
+
+  describe('update tests', () => {
+    it('should send an error response when user does not exist', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce(null);
+      await user.update(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('user doesnt exist with this id');
+      done();
+    });
+
+    it('should send an error response when new password and old password are same', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({
+        firstName: 'mockedName',
+        lastName: 'mockedName',
+        email: 'mockedEmail',
+        userId: 'mockedsuerId',
+      });
+      req.body.newPassword = 'fkhsfK2342';
+      await user.update(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('New and old password can not be the same');
+      done();
+    });
+
+    it('should send an error response when password is empty', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({
+        firstName: 'mockedName',
+        lastName: 'mockedName',
+        email: 'mockedEmail',
+        userId: 'mockedUserId',
+      });
+      req.body.newPassword = 'fkhsTDfK2342';
+      req.body.password = '';
+      await user.update(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('email and password must be provided for update');
+      done();
+    });
+
+    it('should send an error response when password is wrong', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({
+        firstName: 'mockedName',
+        lastName: 'mockedName',
+        email: 'mockedEmail',
+        userId: 'mockedUserId',
+        validatePassword: () => Promise.resolve(false),
+      });
+      req.body.newPassword = 'fkhsTDfK2342';
+      await user.update(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('Incorrect email and password combination');
+      done();
+    });
+
+    it('should send an error response when validation error', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({
+        firstName: 'mockedName',
+        lastName: 'mockedName',
+        email: 'mockedEmail@gmail.com',
+        userId: 'mockedUserId',
+        validatePassword: () => Promise.resolve(true),
+      });
+      req.body.newPassword = 'fkK2342';
+      await user.update(req, res, next);
+      expect(mockSend).toBeCalledWith([{ field: 'password', message: `Invalid password` }]);
+      done();
+    });
+
+    it('should send 201 response when update successful', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(201);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({
+        firstName: 'mockedName',
+        lastName: 'mockedName',
+        email: 'mockedEmail@gmail.com',
+        userId: 'mockedUserId',
+        validatePassword: () => Promise.resolve(true),
+        setPassword: () => Promise.resolve(true),
+        save: () => ({ toJSONString: () => 'mockUser' }),
+      });
+      req.body.newPassword = 'fkkK2342';
+      await user.update(req, res, next);
+      expect(mockSend).toBeCalledWith('mockUser');
       done();
     });
   });

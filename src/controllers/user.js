@@ -34,9 +34,37 @@ const getByUserId = async (req, res, next) => {
   }
 };
 
+const validateUser = ({ email, firstName, lastName, password }) => {
+  const validationErrors = [];
+  if (!firstName) {
+    validationErrors.push({ field: 'firstName', message: `Mandatory field` });
+  }
+
+  if (!lastName) {
+    validationErrors.push({ field: 'lastName', message: `Mandatory field` });
+  }
+
+  if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/.test(password)) {
+    validationErrors.push({ field: 'password', message: `Invalid password` });
+  }
+
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    validationErrors.push({ field: 'email', message: 'Invalid email' });
+  }
+
+  return validationErrors;
+};
+
 const createIfDoesntExist = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password } = req.body;
+
+    const validationErrors = validateUser({ email, firstName, lastName, password });
+
+    if (validationErrors.length > 0) {
+      return res.status(400).send(validationErrors);
+    }
+
     let user = await User.findOne({ email });
     if (!user) {
       const user = await createUser({
@@ -61,12 +89,12 @@ const update = async (req, res, next) => {
     const { email, firstName, lastName, password, newPassword } = req.body;
     let user = await User.findOne({ userId: req.params.userId });
 
-    if (password === newPassword) {
-      return res.status(400).send('New and old password can not be the same');
-    }
-
     if (!user) {
       return res.status(400).send('user doesnt exist with this id');
+    }
+
+    if (password === newPassword) {
+      return res.status(400).send('New and old password can not be the same');
     }
 
     if (!email || !password) {
@@ -81,6 +109,17 @@ const update = async (req, res, next) => {
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
+
+    const validationErrors = validateUser({
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      password: newPassword ? newPassword : password,
+    });
+
+    if (validationErrors.length > 0) {
+      return res.status(400).send(validationErrors);
+    }
 
     if (newPassword) {
       await user.setPassword(newPassword);

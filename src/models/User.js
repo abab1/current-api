@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+    minlength: 8,
     required: [true, "password can't be blank"],
   },
   userId: {

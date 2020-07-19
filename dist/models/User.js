@@ -33,6 +33,7 @@ var UserSchema = new _mongoose["default"].Schema({
   },
   password: {
     type: String,
+    minlength: 8,
     required: [true, "password can't be blank"]
   },
   userId: {

@@ -16,58 +16,42 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
-var User = _models["default"].User;
-var mockTransactionFind = jest.fn();
-var mockMerchantFind = jest.fn();
-var mockUserFind = jest.fn();
-var mockTransactionFindOne = jest.fn();
-var mockUserFindOne = jest.fn();
-var mockMerchantFindOne = jest.fn();
-var mockMerchantWhere = jest.fn();
-var mockTransactionAggregate = jest.fn();
-var mockUserSave = jest.fn();
-var mockUserConstructor = jest.fn();
-var mockUser = jest.fn();
+var User = _models["default"].User,
+    Transaction = _models["default"].Transaction;
 jest.mock('../models', function () {
   return {
     __esModule: true,
     "default": {
       Merchant: {
-        find: function find() {
-          return {
-            exec: mockMerchantFind
-          };
-        },
-        findOne: function findOne() {
-          return {
-            exec: mockMerchantFindOne
-          };
-        },
-        where: mockMerchantWhere
+        find: jest.fn(),
+        findOne: jest.fn(),
+        where: jest.fn()
       },
       Transaction: {
-        find: function find() {
-          return {
-            exec: mockTransactionFind
-          };
-        },
-        findOne: function findOne() {
-          return {
-            exec: mockTransactionFindOne
-          };
-        },
-        aggregate: mockTransactionAggregate
+        find: jest.fn(),
+        findOne: jest.fn(),
+        aggregate: jest.fn()
       },
       User: function () {
         function User() {
-          return jest.fn();
+          return {
+            setPassword: jest.fn(),
+            setUserId: jest.fn(),
+            save: jest.fn(function () {
+              return Promise.resolve({
+                id: 1,
+                toJSONString: function toJSONString() {
+                  return 'mock';
+                }
+              });
+            }),
+            toJSONString: function toJSONString() {
+              return 'mock';
+            }
+          };
         }
 
-        User.find = jest.fn(function () {
-          return {
-            exec: exec
-          };
-        });
+        User.find = jest.fn();
         User.findOne = jest.fn();
         User.prototype.save = jest.fn();
         return User;
@@ -85,23 +69,14 @@ var getReq = function getReq(params, body) {
     body: _objectSpread({
       firstName: 'Abhishek',
       lastName: 'Singh',
-      password: 'fkhsfk2342',
+      password: 'fkhsfK2342',
       email: 'abhishek@gmail.com'
     }, body)
   };
 };
 
-describe('merchant controller tests', function () {
-  beforeEach(function () {
-    mockTransactionFind.mockReset();
-    mockMerchantFind.mockReset();
-    mockUserFind.mockReset();
-    mockTransactionFindOne.mockReset();
-    mockUserFindOne.mockReset();
-    mockMerchantFindOne.mockReset();
-    mockMerchantWhere.mockReset();
-    mockTransactionAggregate.mockReset();
-  });
+describe('user controller tests', function () {
+  beforeEach(function () {});
   describe('createIfDoesntExist tests', function () {
     it('should not create a userif already exists with the same email', /*#__PURE__*/function () {
       var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(done) {
@@ -128,7 +103,7 @@ describe('merchant controller tests', function () {
                 return _user["default"].createIfDoesntExist(req, res, next);
 
               case 7:
-                expect(mockSend).toHaveBeenCalled();
+                expect(mockSend).toHaveBeenCalledWith('User already exists for email: abhishek@gmail.com');
                 done();
 
               case 9:
@@ -161,16 +136,15 @@ describe('merchant controller tests', function () {
                   }
                 };
                 next = jest.fn();
-                console.log('User', User);
                 User.findOne.mockResolvedValueOnce(null);
-                _context2.next = 8;
+                _context2.next = 7;
                 return _user["default"].createIfDoesntExist(req, res, next);
 
-              case 8:
-                expect(mockSend).toHaveBeenCalled();
+              case 7:
+                expect(mockSend).toHaveBeenCalledWith('User created successfully: mock');
                 done();
 
-              case 10:
+              case 9:
               case "end":
                 return _context2.stop();
             }
@@ -202,7 +176,7 @@ describe('merchant controller tests', function () {
                   }
                 };
                 next = jest.fn();
-                mockUserFindOne.mockResolvedValueOnce(null);
+                User.findOne.mockResolvedValueOnce(null);
                 _context3.next = 7;
                 return _user["default"].getByUserId(req, res, next);
 
@@ -238,7 +212,7 @@ describe('merchant controller tests', function () {
                 error = new Error({
                   status: 500
                 });
-                mockUserFindOne.mockRejectedValueOnce(new Error({
+                User.findOne.mockRejectedValueOnce(new Error({
                   status: 500
                 }));
                 _context4.next = 8;
@@ -278,7 +252,7 @@ describe('merchant controller tests', function () {
                   }
                 };
                 next = jest.fn();
-                mockUserFindOne.mockResolvedValueOnce({
+                User.findOne.mockResolvedValueOnce({
                   id: 1,
                   toJSONString: function toJSONString() {
                     return 'happy';
@@ -332,7 +306,7 @@ describe('merchant controller tests', function () {
                 }, {
                   id: 2
                 }];
-                mockTransactionFind.mockResolvedValueOnce(transactions);
+                Transaction.find.mockResolvedValueOnce(transactions);
                 _context6.next = 8;
                 return _user["default"].getTransactions(req, res, next);
 
@@ -350,6 +324,289 @@ describe('merchant controller tests', function () {
 
       return function (_x6) {
         return _ref6.apply(this, arguments);
+      };
+    }());
+  });
+  describe('update tests', function () {
+    it('should send an error response when user does not exist', /*#__PURE__*/function () {
+      var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee7$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(400);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce(null);
+                _context7.next = 7;
+                return _user["default"].update(req, res, next);
+
+              case 7:
+                expect(mockSend).toHaveBeenCalledWith('user doesnt exist with this id');
+                done();
+
+              case 9:
+              case "end":
+                return _context7.stop();
+            }
+          }
+        }, _callee7);
+      }));
+
+      return function (_x7) {
+        return _ref7.apply(this, arguments);
+      };
+    }());
+    it('should send an error response when new password and old password are same', /*#__PURE__*/function () {
+      var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee8$(_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(400);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce({
+                  firstName: 'mockedName',
+                  lastName: 'mockedName',
+                  email: 'mockedEmail',
+                  userId: 'mockedsuerId'
+                });
+                req.body.newPassword = 'fkhsfK2342';
+                _context8.next = 8;
+                return _user["default"].update(req, res, next);
+
+              case 8:
+                expect(mockSend).toHaveBeenCalledWith('New and old password can not be the same');
+                done();
+
+              case 10:
+              case "end":
+                return _context8.stop();
+            }
+          }
+        }, _callee8);
+      }));
+
+      return function (_x8) {
+        return _ref8.apply(this, arguments);
+      };
+    }());
+    it('should send an error response when password is empty', /*#__PURE__*/function () {
+      var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee9$(_context9) {
+          while (1) {
+            switch (_context9.prev = _context9.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(400);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce({
+                  firstName: 'mockedName',
+                  lastName: 'mockedName',
+                  email: 'mockedEmail',
+                  userId: 'mockedUserId'
+                });
+                req.body.newPassword = 'fkhsTDfK2342';
+                req.body.password = '';
+                _context9.next = 9;
+                return _user["default"].update(req, res, next);
+
+              case 9:
+                expect(mockSend).toHaveBeenCalledWith('email and password must be provided for update');
+                done();
+
+              case 11:
+              case "end":
+                return _context9.stop();
+            }
+          }
+        }, _callee9);
+      }));
+
+      return function (_x9) {
+        return _ref9.apply(this, arguments);
+      };
+    }());
+    it('should send an error response when password is wrong', /*#__PURE__*/function () {
+      var _ref10 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee10$(_context10) {
+          while (1) {
+            switch (_context10.prev = _context10.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(400);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce({
+                  firstName: 'mockedName',
+                  lastName: 'mockedName',
+                  email: 'mockedEmail',
+                  userId: 'mockedUserId',
+                  validatePassword: function validatePassword() {
+                    return Promise.resolve(false);
+                  }
+                });
+                req.body.newPassword = 'fkhsTDfK2342';
+                _context10.next = 8;
+                return _user["default"].update(req, res, next);
+
+              case 8:
+                expect(mockSend).toHaveBeenCalledWith('Incorrect email and password combination');
+                done();
+
+              case 10:
+              case "end":
+                return _context10.stop();
+            }
+          }
+        }, _callee10);
+      }));
+
+      return function (_x10) {
+        return _ref10.apply(this, arguments);
+      };
+    }());
+    it('should send an error response when validation error', /*#__PURE__*/function () {
+      var _ref11 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee11$(_context11) {
+          while (1) {
+            switch (_context11.prev = _context11.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(400);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce({
+                  firstName: 'mockedName',
+                  lastName: 'mockedName',
+                  email: 'mockedEmail@gmail.com',
+                  userId: 'mockedUserId',
+                  validatePassword: function validatePassword() {
+                    return Promise.resolve(true);
+                  }
+                });
+                req.body.newPassword = 'fkK2342';
+                _context11.next = 8;
+                return _user["default"].update(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith([{
+                  field: 'password',
+                  message: "Invalid password"
+                }]);
+                done();
+
+              case 10:
+              case "end":
+                return _context11.stop();
+            }
+          }
+        }, _callee11);
+      }));
+
+      return function (_x11) {
+        return _ref11.apply(this, arguments);
+      };
+    }());
+    it('should send 201 response when update successful', /*#__PURE__*/function () {
+      var _ref12 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee12$(_context12) {
+          while (1) {
+            switch (_context12.prev = _context12.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(201);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                User.findOne.mockResolvedValueOnce({
+                  firstName: 'mockedName',
+                  lastName: 'mockedName',
+                  email: 'mockedEmail@gmail.com',
+                  userId: 'mockedUserId',
+                  validatePassword: function validatePassword() {
+                    return Promise.resolve(true);
+                  },
+                  setPassword: function setPassword() {
+                    return Promise.resolve(true);
+                  },
+                  save: function save() {
+                    return {
+                      toJSONString: function toJSONString() {
+                        return 'mockUser';
+                      }
+                    };
+                  }
+                });
+                req.body.newPassword = 'fkkK2342';
+                _context12.next = 8;
+                return _user["default"].update(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith('mockUser');
+                done();
+
+              case 10:
+              case "end":
+                return _context12.stop();
+            }
+          }
+        }, _callee12);
+      }));
+
+      return function (_x12) {
+        return _ref12.apply(this, arguments);
       };
     }());
   });

@@ -25,21 +25,18 @@ var createUser = /*#__PURE__*/function () {
         switch (_context.prev = _context.next) {
           case 0:
             firstName = params.firstName, lastName = params.lastName, email = params.email, password = params.password;
-            console.log('here');
             user = new User();
-            console.log('user', user);
             user.firstName = firstName;
             user.lastName = lastName;
             user.email = email;
-            _context.next = 9;
+            _context.next = 7;
             return user.setPassword(password);
 
-          case 9:
+          case 7:
             user.setUserId();
-            console.log('user', user);
             return _context.abrupt("return", user);
 
-          case 12:
+          case 9:
           case "end":
             return _context.stop();
         }

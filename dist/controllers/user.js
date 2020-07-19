@@ -102,9 +102,47 @@ var getByUserId = /*#__PURE__*/function () {
   };
 }();
 
+var validateUser = function validateUser(_ref3) {
+  var email = _ref3.email,
+      firstName = _ref3.firstName,
+      lastName = _ref3.lastName,
+      password = _ref3.password;
+  var validationErrors = [];
+
+  if (!firstName) {
+    validationErrors.push({
+      field: 'firstName',
+      message: "Mandatory field"
+    });
+  }
+
+  if (!lastName) {
+    validationErrors.push({
+      field: 'lastName',
+      message: "Mandatory field"
+    });
+  }
+
+  if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/.test(password)) {
+    validationErrors.push({
+      field: 'password',
+      message: "Invalid password"
+    });
+  }
+
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    validationErrors.push({
+      field: 'email',
+      message: 'Invalid email'
+    });
+  }
+
+  return validationErrors;
+};
+
 var createIfDoesntExist = /*#__PURE__*/function () {
-  var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res, next) {
-    var _req$body, email, firstName, lastName, password, user, _user, createdUser;
+  var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res, next) {
+    var _req$body, email, firstName, lastName, password, validationErrors, user, _user, createdUser;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
@@ -112,21 +150,35 @@ var createIfDoesntExist = /*#__PURE__*/function () {
           case 0:
             _context3.prev = 0;
             _req$body = req.body, email = _req$body.email, firstName = _req$body.firstName, lastName = _req$body.lastName, password = _req$body.password;
-            _context3.next = 4;
+            validationErrors = validateUser({
+              email: email,
+              firstName: firstName,
+              lastName: lastName,
+              password: password
+            });
+
+            if (!(validationErrors.length > 0)) {
+              _context3.next = 5;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(400).send(validationErrors));
+
+          case 5:
+            _context3.next = 7;
             return User.findOne({
               email: email
             });
 
-          case 4:
+          case 7:
             user = _context3.sent;
-            console.log('user', user);
 
             if (user) {
-              _context3.next = 16;
+              _context3.next = 18;
               break;
             }
 
-            _context3.next = 9;
+            _context3.next = 11;
             return createUser({
               firstName: firstName,
               lastName: lastName,
@@ -134,44 +186,43 @@ var createIfDoesntExist = /*#__PURE__*/function () {
               email: email
             });
 
-          case 9:
+          case 11:
             _user = _context3.sent;
-            _context3.next = 12;
+            _context3.next = 14;
             return _user.save();
 
-          case 12:
+          case 14:
             createdUser = _context3.sent;
             return _context3.abrupt("return", res.status(201).send("User created successfully: ".concat(createdUser.toJSONString())));
 
-          case 16:
+          case 18:
             return _context3.abrupt("return", res.status(422).send("User already exists for email: ".concat(email)));
 
-          case 17:
-            _context3.next = 23;
+          case 19:
+            _context3.next = 24;
             break;
 
-          case 19:
-            _context3.prev = 19;
+          case 21:
+            _context3.prev = 21;
             _context3.t0 = _context3["catch"](0);
-            console.log(_context3.t0);
             return _context3.abrupt("return", next(_context3.t0));
 
-          case 23:
+          case 24:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 19]]);
+    }, _callee3, null, [[0, 21]]);
   }));
 
   return function createIfDoesntExist(_x5, _x6, _x7) {
-    return _ref3.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 }();
 
 var update = /*#__PURE__*/function () {
-  var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res, next) {
-    var _req$body2, email, firstName, lastName, password, newPassword, user, updatedUser;
+  var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res, next) {
+    var _req$body2, email, firstName, lastName, password, newPassword, user, validationErrors, updatedUser;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
@@ -187,20 +238,20 @@ var update = /*#__PURE__*/function () {
           case 4:
             user = _context4.sent;
 
-            if (!(password === newPassword)) {
+            if (user) {
               _context4.next = 7;
               break;
             }
 
-            return _context4.abrupt("return", res.status(400).send('New and old password can not be the same'));
+            return _context4.abrupt("return", res.status(400).send('user doesnt exist with this id'));
 
           case 7:
-            if (user) {
+            if (!(password === newPassword)) {
               _context4.next = 9;
               break;
             }
 
-            return _context4.abrupt("return", res.status(400).send('user doesnt exist with this id'));
+            return _context4.abrupt("return", res.status(400).send('New and old password can not be the same'));
 
           case 9:
             if (!(!email || !password)) {
@@ -227,43 +278,57 @@ var update = /*#__PURE__*/function () {
             user.firstName = firstName || user.firstName;
             user.lastName = lastName || user.lastName;
             user.email = email || user.email;
+            validationErrors = validateUser({
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              password: newPassword ? newPassword : password
+            });
 
-            if (!newPassword) {
+            if (!(validationErrors.length > 0)) {
               _context4.next = 21;
               break;
             }
 
-            _context4.next = 21;
-            return user.setPassword(newPassword);
+            return _context4.abrupt("return", res.status(400).send(validationErrors));
 
           case 21:
-            _context4.next = 23;
+            if (!newPassword) {
+              _context4.next = 24;
+              break;
+            }
+
+            _context4.next = 24;
+            return user.setPassword(newPassword);
+
+          case 24:
+            _context4.next = 26;
             return user.save();
 
-          case 23:
+          case 26:
             updatedUser = _context4.sent;
             return _context4.abrupt("return", res.status(201).send(updatedUser.toJSONString()));
 
-          case 27:
-            _context4.prev = 27;
+          case 30:
+            _context4.prev = 30;
             _context4.t0 = _context4["catch"](0);
             return _context4.abrupt("return", next(_context4.t0));
 
-          case 30:
+          case 33:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 27]]);
+    }, _callee4, null, [[0, 30]]);
   }));
 
   return function update(_x8, _x9, _x10) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 
 var getUserBalance = /*#__PURE__*/function () {
-  var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res, next) {
+  var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res, next) {
     var userId, balance;
     return _regenerator["default"].wrap(function _callee5$(_context5) {
       while (1) {
@@ -292,12 +357,12 @@ var getUserBalance = /*#__PURE__*/function () {
   }));
 
   return function getUserBalance(_x11, _x12, _x13) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 }();
 
 var getTransactions = /*#__PURE__*/function () {
-  var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res, next) {
+  var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res, next) {
     var userId, transactions;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
@@ -328,12 +393,12 @@ var getTransactions = /*#__PURE__*/function () {
   }));
 
   return function getTransactions(_x14, _x15, _x16) {
-    return _ref6.apply(this, arguments);
+    return _ref7.apply(this, arguments);
   };
 }();
 
 var getAllUserTransactionsByMerchant = /*#__PURE__*/function () {
-  var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res, next) {
+  var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res, next) {
     var _req$params, userId, merchantId, transactions;
 
     return _regenerator["default"].wrap(function _callee7$(_context7) {
@@ -366,12 +431,12 @@ var getAllUserTransactionsByMerchant = /*#__PURE__*/function () {
   }));
 
   return function getAllUserTransactionsByMerchant(_x17, _x18, _x19) {
-    return _ref7.apply(this, arguments);
+    return _ref8.apply(this, arguments);
   };
 }();
 
 var getUserTransactionSummary = /*#__PURE__*/function () {
-  var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res, next) {
+  var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res, next) {
     var userId, result, merchants, merchantMap, summary;
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
@@ -434,12 +499,12 @@ var getUserTransactionSummary = /*#__PURE__*/function () {
   }));
 
   return function getUserTransactionSummary(_x20, _x21, _x22) {
-    return _ref8.apply(this, arguments);
+    return _ref9.apply(this, arguments);
   };
 }();
 
 var authorizeTransaction = /*#__PURE__*/function () {
-  var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res, next) {
+  var _ref10 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res, next) {
     var _req$body3, userId, transactionAmount, balance;
 
     return _regenerator["default"].wrap(function _callee9$(_context9) {
@@ -483,7 +548,7 @@ var authorizeTransaction = /*#__PURE__*/function () {
   }));
 
   return function authorizeTransaction(_x23, _x24, _x25) {
-    return _ref9.apply(this, arguments);
+    return _ref10.apply(this, arguments);
   };
 }();
 

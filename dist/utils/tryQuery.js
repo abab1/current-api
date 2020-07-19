@@ -20,7 +20,7 @@ var Record = _models["default"].Record,
     Merchant = _models["default"].Merchant,
     Transaction = _models["default"].Transaction;
 (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-  var a, mers, mersum, res;
+  var a, mers, mersum;
   return _regenerator["default"].wrap(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -51,7 +51,7 @@ var Record = _models["default"].Record,
           }, []);*/
           //const blance = result.reduce((acc, trxn) => acc + parseFloat(trxn.amountInCents), 0);
 
-          res = console.log(mersum, new Date().getTime() - a);
+          console.log(mersum, new Date().getTime() - a);
           _context.next = 14;
           break;
 

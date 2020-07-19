@@ -142,7 +142,7 @@ var validateUser = function validateUser(_ref3) {
 
 var createIfDoesntExist = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res, next) {
-    var _req$body, email, firstName, lastName, password, validationErrors, user, _user, createdUser;
+    var _req$body, email, firstName, lastName, password, user, validationErrors, _user, createdUser;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
@@ -150,6 +150,19 @@ var createIfDoesntExist = /*#__PURE__*/function () {
           case 0:
             _context3.prev = 0;
             _req$body = req.body, email = _req$body.email, firstName = _req$body.firstName, lastName = _req$body.lastName, password = _req$body.password;
+            _context3.next = 4;
+            return User.findOne({
+              email: email
+            });
+
+          case 4:
+            user = _context3.sent;
+
+            if (user) {
+              _context3.next = 18;
+              break;
+            }
+
             validationErrors = validateUser({
               email: email,
               firstName: firstName,
@@ -158,26 +171,13 @@ var createIfDoesntExist = /*#__PURE__*/function () {
             });
 
             if (!(validationErrors.length > 0)) {
-              _context3.next = 5;
+              _context3.next = 9;
               break;
             }
 
             return _context3.abrupt("return", res.status(400).send(validationErrors));
 
-          case 5:
-            _context3.next = 7;
-            return User.findOne({
-              email: email
-            });
-
-          case 7:
-            user = _context3.sent;
-
-            if (user) {
-              _context3.next = 18;
-              break;
-            }
-
+          case 9:
             _context3.next = 11;
             return createUser({
               firstName: firstName,
@@ -341,7 +341,7 @@ var getUserBalance = /*#__PURE__*/function () {
 
           case 4:
             balance = _context5.sent;
-            return _context5.abrupt("return", res.status(200).send("User balance is $ ".concat(balance)));
+            return _context5.abrupt("return", res.status(200).send("User balance is $ ".concat(balance / 100)));
 
           case 8:
             _context5.prev = 8;

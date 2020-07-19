@@ -25,6 +25,57 @@ jest.mock('../models', () => ({
 }));
 
 describe('merchant controller tests', () => {
+  describe('getMerchant tests', () => {
+    it('should send 500 on error', async (done) => {
+      const req = { params: { merchantId: 1234 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(500);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      const error = new Error({ status: 500 });
+      Merchant.findOne.mockRejectedValueOnce(error);
+      await merchants.getMerchant(req, res, next);
+      expect(next).toBeCalledWith(error);
+      done();
+    });
+
+    it('should send 400 if merchant not found', async (done) => {
+      const req = { params: { merchantId: 1234 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      Merchant.findOne.mockResolvedValueOnce(null);
+      await merchants.getMerchant(req, res, next);
+      expect(sendMock).toBeCalledWith('Merchant not found');
+      done();
+    });
+
+    it('should send 200 on success', async (done) => {
+      const req = { params: { merchantId: 1234 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      Merchant.findOne.mockResolvedValueOnce({ id: 1 });
+      await merchants.getMerchant(req, res, next);
+      expect(sendMock).toBeCalledWith({ id: 1 });
+      done();
+    });
+  });
+
   describe('getAllTransactionsForMerchant tests', () => {
     it('should send 500 on error', async (done) => {
       const req = { params: { merchantId: 1234 } };
@@ -89,7 +140,7 @@ describe('merchant controller tests', () => {
       };
       const next = jest.fn();
       Merchant.findOne.mockResolvedValueOnce({ id: 1234, name: 'Taco bell' });
-      fetch.mockResolvedValueOnce({ results: [] });
+      fetch.mockResolvedValueOnce({ json: () => Promise.resolve({ results: [] }) });
       await merchants.updateAddress(req, res, next);
       expect(sendMock).toBeCalledWith({ reason: 'Could not find address on google places' });
       done();
@@ -106,7 +157,9 @@ describe('merchant controller tests', () => {
       };
       const next = jest.fn();
       Merchant.findOne.mockResolvedValueOnce({ id: 1234, name: 'Taco bell', save: jest.fn() });
-      fetch.mockResolvedValueOnce({ results: [{ vicinity: 'mocked place' }] });
+      fetch.mockResolvedValueOnce({
+        json: () => Promise.resolve({ results: [{ vicinity: 'mocked place' }] }),
+      });
       await merchants.updateAddress(req, res, next);
       expect(sendMock).toBeCalledWith('updated address: mocked place');
       done();

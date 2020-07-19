@@ -11,11 +11,11 @@ const updateAddress = async (req, res, next) => {
       return res.status(400).send({ reason: 'Merchant doesnt exist' });
     }
     const { name, latitude, longitude } = merchant;
-    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?
-    location=${latitude},${longitude}&radius=1000&keyword=${
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1000&keyword=${
       name.split(' ')[0]
     }&key=AIzaSyBMqSF2_WoK8ow89v8Qq4SHLb94mY9B5j8`;
-    const data = await fetch(url);
+    const response = await fetch(url);
+    const data = await response.json();
     const address = data && data.results && data.results[0] && data.results[0].vicinity;
 
     if (address) {
@@ -40,7 +40,21 @@ const getAllTransactionsForMerchant = async (req, res, next) => {
   }
 };
 
+const getMerchant = async (req, res, next) => {
+  try {
+    const { merchantId } = req.params;
+    const merchant = await Merchant.findOne({ merchantId });
+    if (merchant) {
+      return res.status(200).send(merchant);
+    }
+    return res.status(400).send('Merchant not found');
+  } catch (e) {
+    return next(e);
+  }
+};
+
 export default {
+  getMerchant,
   getAllTransactionsForMerchant,
   updateAddress,
 };

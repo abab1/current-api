@@ -30,7 +30,7 @@ const getByUserId = async (req, res, next) => {
     }
     return res.status(201).send(`user is ${user.toJSONString()}`);
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 
@@ -59,7 +59,7 @@ const createIfDoesntExist = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password } = req.body;
 
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       const validationErrors = validateUser({ email, firstName, lastName, password });
 
@@ -67,18 +67,17 @@ const createIfDoesntExist = async (req, res, next) => {
         return res.status(400).send(validationErrors);
       }
 
-      const user = await createUser({
+      const userObj = await createUser({
         firstName,
         lastName,
         password,
         email,
       });
 
-      const createdUser = await user.save();
+      const createdUser = await userObj.save();
       return res.status(201).send(`User created successfully: ${createdUser.toJSONString()}`);
-    } else {
-      return res.status(422).send(`User already exists for email: ${email}`);
     }
+    return res.status(422).send(`User already exists for email: ${email}`);
   } catch (e) {
     return next(e);
   }
@@ -87,7 +86,7 @@ const createIfDoesntExist = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password, newPassword } = req.body;
-    let user = await User.findOne({ userId: req.params.userId });
+    const user = await User.findOne({ userId: req.params.userId });
 
     if (!user) {
       return res.status(400).send('user doesnt exist with this id');
@@ -184,7 +183,10 @@ const getUserTransactionSummary = async (req, res, next) => {
     });
 
     const merchantMap = {};
-    merchants.forEach((merchant) => (merchantMap[merchant.merchantId] = merchant.name));
+    merchants.forEach((merchant) => {
+      merchantMap[merchant.merchantId] = merchant.name;
+      return;
+    });
 
     const summary = [];
     result.forEach((item, index) => {
@@ -210,7 +212,7 @@ const authorizeTransaction = async (req, res, next) => {
     }
     return res.status(200).send({ status: 'DECLINED', reason: 'Insufficient balance' });
   } catch (e) {
-    next(e);
+    return next(e);
   }
 };
 

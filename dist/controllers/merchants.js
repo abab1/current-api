@@ -20,7 +20,7 @@ var Merchant = _models["default"].Merchant,
 
 var updateAddress = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res, next) {
-    var merchantId, merchant, name, latitude, longitude, url, data, address, updatedMerchant;
+    var merchantId, merchant, name, latitude, longitude, url, data, address;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -30,7 +30,7 @@ var updateAddress = /*#__PURE__*/function () {
             _context.next = 4;
             return Merchant.findOne({
               merchantId: merchantId
-            }).exec();
+            });
 
           case 4:
             merchant = _context.sent;
@@ -40,7 +40,9 @@ var updateAddress = /*#__PURE__*/function () {
               break;
             }
 
-            return _context.abrupt("return", res.status(400).send('Merchant doesnt exist'));
+            return _context.abrupt("return", res.status(400).send({
+              reason: 'Merchant doesnt exist'
+            }));
 
           case 7:
             name = merchant.name, latitude = merchant.latitude, longitude = merchant.longitude;
@@ -51,25 +53,35 @@ var updateAddress = /*#__PURE__*/function () {
           case 11:
             data = _context.sent;
             address = data && data.results && data.results[0] && data.results[0].vicinity;
+
+            if (!address) {
+              _context.next = 18;
+              break;
+            }
+
             merchant.address = address;
-            _context.next = 16;
+            _context.next = 17;
             return merchant.save();
 
-          case 16:
-            updatedMerchant = _context.sent;
+          case 17:
             return _context.abrupt("return", res.status(201).send("updated address: ".concat(address)));
 
-          case 20:
-            _context.prev = 20;
+          case 18:
+            return _context.abrupt("return", res.status(400).send({
+              reason: 'Could not find address on google places'
+            }));
+
+          case 21:
+            _context.prev = 21;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", next(_context.t0));
 
-          case 23:
+          case 24:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 20]]);
+    }, _callee, null, [[0, 21]]);
   }));
 
   return function updateAddress(_x, _x2, _x3) {
@@ -89,7 +101,7 @@ var getAllTransactionsForMerchant = /*#__PURE__*/function () {
             _context2.next = 4;
             return Transaction.find({
               merchantId: merchantId
-            }).exec();
+            });
 
           case 4:
             transactions = _context2.sent;

@@ -14,6 +14,6 @@ var _merchants = _interopRequireDefault(require("../../controllers/merchants"));
 var router = _express["default"].Router();
 
 router.get('/:merchantId/transactions', _merchants["default"].getAllTransactionsForMerchant);
-router.patch('/:merchantId', _merchants["default"].updateAddress);
+router.patch('/:merchantId/updateAddress', _merchants["default"].updateAddress);
 var _default = router;
 exports["default"] = _default;

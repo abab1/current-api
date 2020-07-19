@@ -19,7 +19,7 @@ const getBalance = async (userId) => {
     },
   ]);
 
-  return result && result[0].balance / 100;
+  return result && result[0].balance;
 };
 
 const getByUserId = async (req, res, next) => {
@@ -59,14 +59,14 @@ const createIfDoesntExist = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password } = req.body;
 
-    const validationErrors = validateUser({ email, firstName, lastName, password });
-
-    if (validationErrors.length > 0) {
-      return res.status(400).send(validationErrors);
-    }
-
     let user = await User.findOne({ email });
     if (!user) {
+      const validationErrors = validateUser({ email, firstName, lastName, password });
+
+      if (validationErrors.length > 0) {
+        return res.status(400).send(validationErrors);
+      }
+
       const user = await createUser({
         firstName,
         lastName,
@@ -136,7 +136,7 @@ const getUserBalance = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const balance = await getBalance(userId);
-    return res.status(200).send(`User balance is $ ${balance}`);
+    return res.status(200).send(`User balance is $ ${balance / 100}`);
   } catch (e) {
     return next(e);
   }
@@ -205,7 +205,7 @@ const authorizeTransaction = async (req, res, next) => {
   try {
     const { userId, transactionAmount } = req.body;
     const balance = await getBalance(userId);
-    if (balance > transactionAmount) {
+    if (balance >= transactionAmount) {
       return res.status(200).send({ status: 'APPROVED' });
     }
     return res.status(200).send({ status: 'DECLINED', reason: 'Insufficient balance' });

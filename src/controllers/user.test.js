@@ -1,7 +1,7 @@
 import user from './user';
 import models from '../models';
 
-const { User, Transaction } = models;
+const { User, Transaction, Merchant } = models;
 
 jest.mock('../models', () => ({
   __esModule: true,
@@ -50,42 +50,6 @@ const getReq = (params, body) => ({
 });
 
 describe('user controller tests', () => {
-  beforeEach(() => {});
-
-  describe('createIfDoesntExist tests', () => {
-    it('should not create a userif already exists with the same email', async (done) => {
-      const req = getReq();
-      const mockSend = jest.fn();
-      const res = {
-        status: (code) => {
-          expect(code).toEqual(422);
-          return { send: mockSend };
-        },
-      };
-      const next = jest.fn();
-      User.findOne.mockResolvedValueOnce({ id: 12 });
-      await user.createIfDoesntExist(req, res, next);
-      expect(mockSend).toHaveBeenCalledWith('User already exists for email: abhishek@gmail.com');
-      done();
-    });
-
-    it('should create a user if already no user exists with the given email', async (done) => {
-      const req = getReq();
-      const mockSend = jest.fn();
-      const res = {
-        status: (code) => {
-          expect(code).toEqual(201);
-          return { send: mockSend };
-        },
-      };
-      const next = jest.fn();
-      User.findOne.mockResolvedValueOnce(null);
-      await user.createIfDoesntExist(req, res, next);
-      expect(mockSend).toHaveBeenCalledWith('User created successfully: mock');
-      done();
-    });
-  });
-
   describe('getByUserId tests', () => {
     it('should return 400 when user not found', async (done) => {
       const req = getReq();
@@ -130,25 +94,6 @@ describe('user controller tests', () => {
       User.findOne.mockResolvedValueOnce({ id: 1, toJSONString: () => 'happy' });
       await user.getByUserId(req, res, next);
       expect(mockSend).toBeCalledWith('user is happy');
-      done();
-    });
-  });
-
-  describe('getTransactions tests', () => {
-    it('should send 200 status code and return transactions', async (done) => {
-      const req = { params: { userId: 1234 } };
-      const sendMock = jest.fn();
-      const res = {
-        status: (code) => {
-          expect(code).toEqual(200);
-          return { send: sendMock };
-        },
-      };
-      const next = jest.fn();
-      const transactions = [{ id: 1 }, { id: 2 }];
-      Transaction.find.mockResolvedValueOnce(transactions);
-      await user.getTransactions(req, res, next);
-      expect(sendMock).toBeCalledWith(transactions);
       done();
     });
   });
@@ -283,6 +228,216 @@ describe('user controller tests', () => {
       req.body.newPassword = 'fkkK2342';
       await user.update(req, res, next);
       expect(mockSend).toBeCalledWith('mockUser');
+      done();
+    });
+  });
+
+  describe('createIfDoesntExist tests', () => {
+    it('should not create a user if already exists with the same email', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(422);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce({ id: 12 });
+      await user.createIfDoesntExist(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('User already exists for email: abhishek@gmail.com');
+      done();
+    });
+
+    it('should not create a user on validation failures', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(400);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce(null);
+      req.body.firstName = '';
+      req.body.lastName = '';
+      req.body.password = 'sfwsf';
+      req.body.email = 'gddg';
+      await user.createIfDoesntExist(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith([
+        { field: 'firstName', message: `Mandatory field` },
+        { field: 'lastName', message: `Mandatory field` },
+        { field: 'password', message: `Invalid password` },
+        { field: 'email', message: 'Invalid email' },
+      ]);
+      done();
+    });
+
+    it('should create a user if already no user exists with the given email', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(201);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      User.findOne.mockResolvedValueOnce(null);
+      await user.createIfDoesntExist(req, res, next);
+      expect(mockSend).toHaveBeenCalledWith('User created successfully: mock');
+      done();
+    });
+  });
+
+  describe('getAllUserTransactionsByMerchant tests', () => {
+    it('should send 200 status code and return transactions', async (done) => {
+      const req = { params: { userId: 1234, merchantId: 12 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      const transactions = [{ id: 1 }, { id: 2 }];
+      Transaction.find.mockResolvedValueOnce(transactions);
+      await user.getAllUserTransactionsByMerchant(req, res, next);
+      expect(sendMock).toBeCalledWith(transactions);
+      done();
+    });
+  });
+
+  describe('getUserBalance tests', () => {
+    it('should send 200 status code and return transactions', async (done) => {
+      const req = { params: { userId: 1234 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      Transaction.aggregate.mockResolvedValueOnce([{ _id: null, balance: 25050 }]);
+      await user.getUserBalance(req, res, next);
+      expect(sendMock).toBeCalledWith('User balance is $ 250.5');
+      done();
+    });
+
+    it('should return 500 when error thrown', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        send: mockSend,
+      };
+      const next = jest.fn();
+      const error = new Error({ status: 500 });
+      Transaction.aggregate.mockRejectedValueOnce(new Error({ status: 500 }));
+      await user.getUserBalance(req, res, next);
+      expect(next).toBeCalledWith(error);
+      done();
+    });
+  });
+
+  describe('getTransactions tests', () => {
+    it('should send 200 status code and return transactions', async (done) => {
+      const req = { params: { userId: 1234 } };
+      const sendMock = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: sendMock };
+        },
+      };
+      const next = jest.fn();
+      const transactions = [{ id: 1 }, { id: 2 }];
+      Transaction.find.mockResolvedValueOnce(transactions);
+      await user.getTransactions(req, res, next);
+      expect(sendMock).toBeCalledWith(transactions);
+      done();
+    });
+  });
+
+  describe('getUserTransactionSummary tests', () => {
+    it('should send 200 response with trxn summary', async (done) => {
+      const req = getReq();
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      Merchant.where.mockResolvedValueOnce([
+        { merchantId: 1, name: 'ABC' },
+        { merchantId: 2, name: 'DEF' },
+      ]);
+      Transaction.aggregate.mockResolvedValueOnce([
+        { _id: 1, balance: 10000 },
+        { _id: 2, balance: 20000 },
+      ]);
+      await user.getUserTransactionSummary(req, res, next);
+      expect(mockSend).toBeCalledWith([
+        { merchantId: 1, merchantName: 'ABC', moneySpent: '$100' },
+        { merchantId: 2, merchantName: 'DEF', moneySpent: '$200' },
+      ]);
+      done();
+    });
+  });
+
+  describe('authorizeTransaction tests', () => {
+    it('should send 200 with APPROVED code when balance is more than the trxn amount', async (done) => {
+      const req = getReq();
+      req.body.transactionAmount = 5000;
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      Transaction.aggregate.mockResolvedValueOnce([{ _id: null, balance: 25000 }]);
+      await user.authorizeTransaction(req, res, next);
+      expect(mockSend).toBeCalledWith({ status: 'APPROVED' });
+      done();
+    });
+
+    it('should send 200 with APPROVED code when balance is same as the trxn amount', async (done) => {
+      const req = getReq();
+      req.body.transactionAmount = 25000;
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      Transaction.aggregate.mockResolvedValueOnce([{ _id: null, balance: 25000 }]);
+      await user.authorizeTransaction(req, res, next);
+      expect(mockSend).toBeCalledWith({ status: 'APPROVED' });
+      done();
+    });
+
+    it('should send 200 with DECLINED code when balance is less than the trxn amoun', async (done) => {
+      const req = getReq();
+      req.body.transactionAmount = 25001;
+      const mockSend = jest.fn();
+      const res = {
+        status: (code) => {
+          expect(code).toEqual(200);
+          return { send: mockSend };
+        },
+      };
+      const next = jest.fn();
+      Transaction.aggregate.mockResolvedValueOnce([{ _id: null, balance: 25000 }]);
+      await user.authorizeTransaction(req, res, next);
+      expect(mockSend).toBeCalledWith({ status: 'DECLINED', reason: 'Insufficient balance' });
       done();
     });
   });

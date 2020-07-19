@@ -20,7 +20,7 @@ const { Record, User, Merchant, Transaction } = models;
       return acc;
     }, []);*/
     //const blance = result.reduce((acc, trxn) => acc + parseFloat(trxn.amountInCents), 0);
-    const res = console.log(mersum, new Date().getTime() - a);
+    console.log(mersum, new Date().getTime() - a);
   } catch (e) {
     console.log('error', e);
   }

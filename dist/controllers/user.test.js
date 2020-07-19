@@ -17,7 +17,8 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var User = _models["default"].User,
-    Transaction = _models["default"].Transaction;
+    Transaction = _models["default"].Transaction,
+    Merchant = _models["default"].Merchant;
 jest.mock('../models', function () {
   return {
     __esModule: true,
@@ -607,6 +608,202 @@ describe('user controller tests', function () {
 
       return function (_x12) {
         return _ref12.apply(this, arguments);
+      };
+    }());
+  });
+  describe('getUserTransactionSummary tests', function () {
+    it('should send 200 response with trxn summary', /*#__PURE__*/function () {
+      var _ref13 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee13(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee13$(_context13) {
+          while (1) {
+            switch (_context13.prev = _context13.next) {
+              case 0:
+                req = getReq();
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(200);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                Merchant.where.mockResolvedValueOnce([{
+                  merchantId: 1,
+                  name: 'ABC'
+                }, {
+                  merchantId: 2,
+                  name: 'DEF'
+                }]);
+                Transaction.aggregate.mockResolvedValueOnce([{
+                  _id: 1,
+                  balance: 10000
+                }, {
+                  _id: 2,
+                  balance: 20000
+                }]);
+                _context13.next = 8;
+                return _user["default"].getUserTransactionSummary(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith([{
+                  merchantId: 1,
+                  merchantName: 'ABC',
+                  moneySpent: '$100'
+                }, {
+                  merchantId: 2,
+                  merchantName: 'DEF',
+                  moneySpent: '$200'
+                }]);
+                done();
+
+              case 10:
+              case "end":
+                return _context13.stop();
+            }
+          }
+        }, _callee13);
+      }));
+
+      return function (_x13) {
+        return _ref13.apply(this, arguments);
+      };
+    }());
+  });
+  describe('getUserTransactionSummary tests', function () {
+    it('should send 200 with APPROVED code when balance is more than the trxn amount', /*#__PURE__*/function () {
+      var _ref14 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee14(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee14$(_context14) {
+          while (1) {
+            switch (_context14.prev = _context14.next) {
+              case 0:
+                req = getReq();
+                req.body.transactionAmount = 5000;
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(200);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                Transaction.aggregate.mockResolvedValueOnce([{
+                  _id: null,
+                  balance: 25000
+                }]);
+                _context14.next = 8;
+                return _user["default"].authorizeTransaction(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith({
+                  status: 'APPROVED'
+                });
+                done();
+
+              case 10:
+              case "end":
+                return _context14.stop();
+            }
+          }
+        }, _callee14);
+      }));
+
+      return function (_x14) {
+        return _ref14.apply(this, arguments);
+      };
+    }());
+    it('should send 200 with APPROVED code when balance is same as the trxn amount', /*#__PURE__*/function () {
+      var _ref15 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee15(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee15$(_context15) {
+          while (1) {
+            switch (_context15.prev = _context15.next) {
+              case 0:
+                req = getReq();
+                req.body.transactionAmount = 25000;
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(200);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                Transaction.aggregate.mockResolvedValueOnce([{
+                  _id: null,
+                  balance: 25000
+                }]);
+                _context15.next = 8;
+                return _user["default"].authorizeTransaction(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith({
+                  status: 'APPROVED'
+                });
+                done();
+
+              case 10:
+              case "end":
+                return _context15.stop();
+            }
+          }
+        }, _callee15);
+      }));
+
+      return function (_x15) {
+        return _ref15.apply(this, arguments);
+      };
+    }());
+    it('should send 200 with DECLINED code when balance is less than the trxn amoun', /*#__PURE__*/function () {
+      var _ref16 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee16(done) {
+        var req, mockSend, res, next;
+        return _regenerator["default"].wrap(function _callee16$(_context16) {
+          while (1) {
+            switch (_context16.prev = _context16.next) {
+              case 0:
+                req = getReq();
+                req.body.transactionAmount = 25001;
+                mockSend = jest.fn();
+                res = {
+                  status: function status(code) {
+                    expect(code).toEqual(200);
+                    return {
+                      send: mockSend
+                    };
+                  }
+                };
+                next = jest.fn();
+                Transaction.aggregate.mockResolvedValueOnce([{
+                  _id: null,
+                  balance: 25000
+                }]);
+                _context16.next = 8;
+                return _user["default"].authorizeTransaction(req, res, next);
+
+              case 8:
+                expect(mockSend).toBeCalledWith({
+                  status: 'DECLINED',
+                  reason: 'Insufficient balance'
+                });
+                done();
+
+              case 10:
+              case "end":
+                return _context16.stop();
+            }
+          }
+        }, _callee16);
+      }));
+
+      return function (_x16) {
+        return _ref16.apply(this, arguments);
       };
     }());
   });

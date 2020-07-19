@@ -5,6 +5,6 @@ let router = express.Router();
 
 router.get('/:merchantId/transactions', merchantController.getAllTransactionsForMerchant);
 
-router.patch('/:merchantId', merchantController.updateAddress);
+router.patch('/:merchantId/updateAddress', merchantController.updateAddress);
 
 export default router;

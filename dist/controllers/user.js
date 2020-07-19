@@ -43,7 +43,7 @@ var getBalance = /*#__PURE__*/function () {
 
           case 2:
             result = _context.sent;
-            return _context.abrupt("return", result && result[0].balance / 100);
+            return _context.abrupt("return", result && result[0].balance);
 
           case 4:
           case "end":
@@ -519,7 +519,7 @@ var authorizeTransaction = /*#__PURE__*/function () {
           case 4:
             balance = _context9.sent;
 
-            if (!(balance > transactionAmount)) {
+            if (!(balance >= transactionAmount)) {
               _context9.next = 7;
               break;
             }

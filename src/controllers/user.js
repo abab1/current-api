@@ -86,7 +86,8 @@ const createIfDoesntExist = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { email, firstName, lastName, password, newPassword } = req.body;
-    const user = await User.findOne({ userId: req.params.userId });
+    const userId = req.params.userId;
+    const user = await User.findOne({ userId });
 
     if (!user) {
       return res.status(400).send('user doesnt exist with this id');
@@ -105,9 +106,9 @@ const update = async (req, res, next) => {
     }
 
     // update user's properties
-    user.firstName = firstName || user.firstName;
-    user.lastName = lastName || user.lastName;
-    user.email = email || user.email;
+    // user.firstName = firstName || user.firstName;
+    // user.lastName = lastName || user.lastName;
+    // user.email = email || user.email;
 
     const validationErrors = validateUser({
       email: user.email,
@@ -122,10 +123,25 @@ const update = async (req, res, next) => {
 
     if (newPassword) {
       await user.setPassword(newPassword);
+      await User.update({ userId }, { password: user.password });
     }
 
-    const updatedUser = await user.save();
-    return res.status(201).send(updatedUser.toJSONString());
+    if (email !== user.email) {
+      await User.update({ userId }, { email });
+    }
+
+    if (firstName !== user.firstName) {
+      await User.update({ userId }, { firstName });
+    }
+
+    console.log('here', firstName, user.firstName);
+
+    if (lastName != user.lastName) {
+      await User.update({ userId }, { lastName });
+    }
+
+    //const updatedUser = await user.save();
+    return res.status(201).send('User updated');
   } catch (e) {
     return next(e);
   }

@@ -19,8 +19,9 @@ const updateAddress = async (req, res, next) => {
     const address = data && data.results && data.results[0] && data.results[0].vicinity;
 
     if (address) {
-      merchant.address = address;
-      await merchant.save();
+      //merchant.address = address;
+      //await merchant.save();
+      await Merchant.update({ merchantId }, { address });
       return res.status(201).send(`updated address: ${address}`);
     }
 

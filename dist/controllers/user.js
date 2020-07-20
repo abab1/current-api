@@ -218,7 +218,7 @@ var createIfDoesntExist = /*#__PURE__*/function () {
 
 var update = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res, next) {
-    var _req$body2, email, firstName, lastName, password, newPassword, user, validationErrors, updatedUser;
+    var _req$body2, email, firstName, lastName, password, newPassword, userId, user, validationErrors;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
@@ -226,50 +226,51 @@ var update = /*#__PURE__*/function () {
           case 0:
             _context4.prev = 0;
             _req$body2 = req.body, email = _req$body2.email, firstName = _req$body2.firstName, lastName = _req$body2.lastName, password = _req$body2.password, newPassword = _req$body2.newPassword;
-            _context4.next = 4;
+            userId = req.params.userId;
+            _context4.next = 5;
             return User.findOne({
-              userId: req.params.userId
+              userId: userId
             });
 
-          case 4:
+          case 5:
             user = _context4.sent;
 
             if (user) {
-              _context4.next = 7;
+              _context4.next = 8;
               break;
             }
 
             return _context4.abrupt("return", res.status(400).send('user doesnt exist with this id'));
 
-          case 7:
+          case 8:
             if (!(password === newPassword)) {
-              _context4.next = 9;
+              _context4.next = 10;
               break;
             }
 
             return _context4.abrupt("return", res.status(400).send('New and old password can not be the same'));
 
-          case 9:
+          case 10:
             if (!(!email || !password)) {
-              _context4.next = 11;
+              _context4.next = 12;
               break;
             }
 
             return _context4.abrupt("return", res.status(400).send('email and password must be provided for update'));
 
-          case 11:
-            _context4.next = 13;
+          case 12:
+            _context4.next = 14;
             return user.validatePassword(password);
 
-          case 13:
+          case 14:
             if (_context4.sent) {
-              _context4.next = 15;
+              _context4.next = 16;
               break;
             }
 
             return _context4.abrupt("return", res.status(400).send('Incorrect email and password combination'));
 
-          case 15:
+          case 16:
             // update user's properties
             user.firstName = firstName || user.firstName;
             user.lastName = lastName || user.lastName;
@@ -282,40 +283,82 @@ var update = /*#__PURE__*/function () {
             });
 
             if (!(validationErrors.length > 0)) {
-              _context4.next = 21;
+              _context4.next = 22;
               break;
             }
 
             return _context4.abrupt("return", res.status(400).send(validationErrors));
 
-          case 21:
+          case 22:
             if (!newPassword) {
-              _context4.next = 24;
+              _context4.next = 27;
               break;
             }
 
-            _context4.next = 24;
+            _context4.next = 25;
             return user.setPassword(newPassword);
 
-          case 24:
-            _context4.next = 26;
-            return user.save();
+          case 25:
+            _context4.next = 27;
+            return User.update({
+              userId: userId
+            }, {
+              password: user.password
+            });
 
-          case 26:
-            updatedUser = _context4.sent;
-            return _context4.abrupt("return", res.status(201).send(updatedUser.toJSONString()));
+          case 27:
+            if (!(email !== user.email)) {
+              _context4.next = 30;
+              break;
+            }
+
+            _context4.next = 30;
+            return User.update({
+              userId: userId
+            }, {
+              email: email
+            });
 
           case 30:
-            _context4.prev = 30;
+            if (!(firstName !== user.firstName)) {
+              _context4.next = 33;
+              break;
+            }
+
+            _context4.next = 33;
+            return User.update({
+              userId: userId
+            }, {
+              firstName: firstName
+            });
+
+          case 33:
+            if (!(lastName != user.lastName)) {
+              _context4.next = 36;
+              break;
+            }
+
+            _context4.next = 36;
+            return User.update({
+              userId: userId
+            }, {
+              lastName: lastName
+            });
+
+          case 36:
+            return _context4.abrupt("return", res.status(201).send('User updated'));
+
+          case 39:
+            _context4.prev = 39;
             _context4.t0 = _context4["catch"](0);
             return _context4.abrupt("return", next(_context4.t0));
 
-          case 33:
+          case 42:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 30]]);
+    }, _callee4, null, [[0, 39]]);
   }));
 
   return function update(_x8, _x9, _x10) {

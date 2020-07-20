@@ -60,33 +60,36 @@ var updateAddress = /*#__PURE__*/function () {
             address = data && data.results && data.results[0] && data.results[0].vicinity;
 
             if (!address) {
-              _context.next = 21;
+              _context.next = 20;
               break;
             }
 
-            merchant.address = address;
-            _context.next = 20;
-            return merchant.save();
+            _context.next = 19;
+            return Merchant.update({
+              merchantId: merchantId
+            }, {
+              address: address
+            });
 
-          case 20:
+          case 19:
             return _context.abrupt("return", res.status(201).send("updated address: ".concat(address)));
 
-          case 21:
+          case 20:
             return _context.abrupt("return", res.status(400).send({
               reason: 'Could not find address on google places'
             }));
 
-          case 24:
-            _context.prev = 24;
+          case 23:
+            _context.prev = 23;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", next(_context.t0));
 
-          case 27:
+          case 26:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 24]]);
+    }, _callee, null, [[0, 23]]);
   }));
 
   return function updateAddress(_x, _x2, _x3) {

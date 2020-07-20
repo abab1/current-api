@@ -1,1 +1,8 @@
 node_modules
+data
+dist
+archives
+coverage
+src/utils
+src/models
+src/controllers/*.test.js

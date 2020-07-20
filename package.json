@@ -2,30 +2,56 @@
   "name": "curent-api",
   "version": "1.0.0",
   "description": "node backend api test",
-  "main": "index.js",
+  "main": "src/app.js",
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "<rootDir>/dist",
+      "<rootDir>/node_modules"
+    ],
+    "coveragePathIgnorePatterns": [
+      "app.js",
+      "server.js",
+      "utils",
+      "routes",
+      "models"
+    ]
+  },
   "scripts": {
-    "dev": "nodemon --exec babel-node index.js",
-    "start": "node --exec babel-node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ."
+    "test": "jest --detectOpenHandles --forceExit",
+    "cover": "jest --coverage",
+    "lint": "eslint .",
+    "populateData": "npm run build && node --max-old-space-size=4096 dist/utils/populateDB.js",
+    "build": "babel src -d dist",
+    "start": "npm run build && nodemon --exec babel-node src/server.js",
+    "serve": "npm run build && node dist/server.js",
+    "query": "npm run build && node --max-old-space-size=4096 dist/utils/tryQuery.js"
   },
   "author": "abab1@umbc.edu",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.23",
+    "node-fetch": "^2.6.0",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.10.4",
     "@babel/core": "^7.10.4",
     "@babel/node": "^7.10.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.10.4",
+    "@babel/plugin-transform-regenerator": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
-    "@typescript-eslint/eslint-plugin": "^3.6.0",
-    "@typescript-eslint/parser": "^3.6.0",
     "eslint": "^7.4.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5"
   }

@@ -33,7 +33,7 @@
 - prettier - for code formatting
 
 ### Postman collection
-
+- https://www.getpostman.com/collections/47f65208626f9ae44600
 ### Public url for testing
 - http://ec2-user@ec2-3-129-89-225.us-east-2.compute.amazonaws.com:3000
 

@@ -87,7 +87,7 @@ var getByUserId = /*#__PURE__*/function () {
           case 9:
             _context2.prev = 9;
             _context2.t0 = _context2["catch"](0);
-            next(_context2.t0);
+            return _context2.abrupt("return", next(_context2.t0));
 
           case 12:
           case "end":
@@ -142,7 +142,7 @@ var validateUser = function validateUser(_ref3) {
 
 var createIfDoesntExist = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res, next) {
-    var _req$body, email, firstName, lastName, password, user, validationErrors, _user, createdUser;
+    var _req$body, email, firstName, lastName, password, user, validationErrors, userObj, createdUser;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
@@ -159,7 +159,7 @@ var createIfDoesntExist = /*#__PURE__*/function () {
             user = _context3.sent;
 
             if (user) {
-              _context3.next = 18;
+              _context3.next = 16;
               break;
             }
 
@@ -187,32 +187,28 @@ var createIfDoesntExist = /*#__PURE__*/function () {
             });
 
           case 11:
-            _user = _context3.sent;
+            userObj = _context3.sent;
             _context3.next = 14;
-            return _user.save();
+            return userObj.save();
 
           case 14:
             createdUser = _context3.sent;
             return _context3.abrupt("return", res.status(201).send("User created successfully: ".concat(createdUser.toJSONString())));
 
-          case 18:
+          case 16:
             return _context3.abrupt("return", res.status(422).send("User already exists for email: ".concat(email)));
 
           case 19:
-            _context3.next = 24;
-            break;
-
-          case 21:
-            _context3.prev = 21;
+            _context3.prev = 19;
             _context3.t0 = _context3["catch"](0);
             return _context3.abrupt("return", next(_context3.t0));
 
-          case 24:
+          case 22:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 21]]);
+    }, _callee3, null, [[0, 19]]);
   }));
 
   return function createIfDoesntExist(_x5, _x6, _x7) {
@@ -473,7 +469,8 @@ var getUserTransactionSummary = /*#__PURE__*/function () {
             merchants = _context8.sent;
             merchantMap = {};
             merchants.forEach(function (merchant) {
-              return merchantMap[merchant.merchantId] = merchant.name;
+              merchantMap[merchant.merchantId] = merchant.name;
+              return;
             });
             summary = [];
             result.forEach(function (item, index) {
@@ -537,7 +534,7 @@ var authorizeTransaction = /*#__PURE__*/function () {
           case 10:
             _context9.prev = 10;
             _context9.t0 = _context9["catch"](0);
-            next(_context9.t0);
+            return _context9.abrupt("return", next(_context9.t0));
 
           case 13:
           case "end":

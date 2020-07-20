@@ -25,21 +25,22 @@
     "populateData": "npm run build && node --max-old-space-size=4096 dist/utils/populateDB.js",
     "build": "babel src -d dist",
     "start": "npm run build && nodemon --exec babel-node src/server.js",
-    "serve": "npm run build && node dist/server.js",
+    "serve": "node dist/server.js",
     "query": "npm run build && node --max-old-space-size=4096 dist/utils/tryQuery.js"
   },
   "author": "abab1@umbc.edu",
   "license": "ISC",
   "dependencies": {
+    "@babel/cli": "^7.10.4",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
+    "jest": "^26.1.0",
     "mongoose": "^5.9.23",
     "node-fetch": "^2.6.0",
     "uuid": "^8.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.10.4",
     "@babel/core": "^7.10.4",
     "@babel/node": "^7.10.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.10.4",
@@ -51,7 +52,6 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "jest": "^26.1.0",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5"
   }

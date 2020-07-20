@@ -11,6 +11,7 @@
 
 ### Installation
 - git clone https://github.com/abab1/current-api.git
+- make sure you are on the master branch
 - npm i
 - npm run build
 - npm run serve

@@ -78,7 +78,7 @@ const addTransactions = async () => {
     await connectDb();
     await addUsers();
     await addmerchants();
-    //await addTransactions();
+    await addTransactions();
     const res = await Record.find().sort({ _id: -1 }).limit(1);
     console.log(res);
   } catch (e) {

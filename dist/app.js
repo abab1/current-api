@@ -15,7 +15,7 @@ var _routes = _interopRequireDefault(require("./routes"));
 
 var _models = require("./models");
 
-//Express setup
+// Express setup
 var app = (0, _express["default"])();
 app.use(_bodyParser["default"].json());
 app.use(_bodyParser["default"].urlencoded({
@@ -30,7 +30,7 @@ app.use(function (req, res, next) {
   return next(err);
 }); /// error handler
 
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   console.log(err.stack);
   res.status(err.status || 500);
   return res.send({

@@ -20,7 +20,7 @@ var Merchant = _models["default"].Merchant,
 
 var updateAddress = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res, next) {
-    var merchantId, merchant, name, latitude, longitude, url, data, address;
+    var merchantId, merchant, name, latitude, longitude, url, response, data, address;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -46,42 +46,47 @@ var updateAddress = /*#__PURE__*/function () {
 
           case 7:
             name = merchant.name, latitude = merchant.latitude, longitude = merchant.longitude;
-            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?\n    location=".concat(latitude, ",").concat(longitude, "&radius=1000&keyword=").concat(name.split(' ')[0], "&key=AIzaSyBMqSF2_WoK8ow89v8Qq4SHLb94mY9B5j8");
+            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=".concat(latitude, ",").concat(longitude, "&radius=1000&keyword=").concat(name.split(' ')[0], "&key=AIzaSyBMqSF2_WoK8ow89v8Qq4SHLb94mY9B5j8");
             _context.next = 11;
             return (0, _nodeFetch["default"])(url);
 
           case 11:
+            response = _context.sent;
+            _context.next = 14;
+            return response.json();
+
+          case 14:
             data = _context.sent;
             address = data && data.results && data.results[0] && data.results[0].vicinity;
 
             if (!address) {
-              _context.next = 18;
+              _context.next = 21;
               break;
             }
 
             merchant.address = address;
-            _context.next = 17;
+            _context.next = 20;
             return merchant.save();
 
-          case 17:
+          case 20:
             return _context.abrupt("return", res.status(201).send("updated address: ".concat(address)));
 
-          case 18:
+          case 21:
             return _context.abrupt("return", res.status(400).send({
               reason: 'Could not find address on google places'
             }));
 
-          case 21:
-            _context.prev = 21;
+          case 24:
+            _context.prev = 24;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", next(_context.t0));
 
-          case 24:
+          case 27:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 21]]);
+    }, _callee, null, [[0, 24]]);
   }));
 
   return function updateAddress(_x, _x2, _x3) {
@@ -125,7 +130,53 @@ var getAllTransactionsForMerchant = /*#__PURE__*/function () {
   };
 }();
 
+var getMerchant = /*#__PURE__*/function () {
+  var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res, next) {
+    var merchantId, merchant;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
+            merchantId = req.params.merchantId;
+            _context3.next = 4;
+            return Merchant.findOne({
+              merchantId: merchantId
+            });
+
+          case 4:
+            merchant = _context3.sent;
+
+            if (!merchant) {
+              _context3.next = 7;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(200).send(merchant));
+
+          case 7:
+            return _context3.abrupt("return", res.status(400).send('Merchant not found'));
+
+          case 10:
+            _context3.prev = 10;
+            _context3.t0 = _context3["catch"](0);
+            return _context3.abrupt("return", next(_context3.t0));
+
+          case 13:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[0, 10]]);
+  }));
+
+  return function getMerchant(_x7, _x8, _x9) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
 var _default = {
+  getMerchant: getMerchant,
   getAllTransactionsForMerchant: getAllTransactionsForMerchant,
   updateAddress: updateAddress
 };

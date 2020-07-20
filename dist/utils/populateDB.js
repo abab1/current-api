@@ -339,32 +339,28 @@ var addTransactions = /*#__PURE__*/function () {
 
         case 7:
           _context6.next = 9;
-          return addTransactions();
-
-        case 9:
-          _context6.next = 11;
           return Record.find().sort({
             _id: -1
           }).limit(1);
 
-        case 11:
+        case 9:
           res = _context6.sent;
           console.log(res);
-          _context6.next = 18;
+          _context6.next = 16;
           break;
 
-        case 15:
-          _context6.prev = 15;
+        case 13:
+          _context6.prev = 13;
           _context6.t0 = _context6["catch"](0);
           console.log('error', _context6.t0);
 
-        case 18:
+        case 16:
           process.exit(0);
 
-        case 19:
+        case 17:
         case "end":
           return _context6.stop();
       }
     }
-  }, _callee6, null, [[0, 15]]);
+  }, _callee6, null, [[0, 13]]);
 }))();

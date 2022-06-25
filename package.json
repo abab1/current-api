@@ -37,7 +37,7 @@
     "express": "^4.17.1",
     "jest": "^26.1.0",
     "mongoose": "^5.9.23",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "uuid": "^8.2.0"
   },
   "devDependencies": {
